@@ -14,6 +14,10 @@ import userController from '../controllers/user.controllers'
 
 const router = express.Router();
 
+
+/**
+ * 
+ */
 router.post('/',
     expressYupMiddleware({
         schemaValidator: addUserSchemaValidator,
