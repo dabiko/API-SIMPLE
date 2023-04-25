@@ -13,6 +13,13 @@ const users = [
     city: 'Douala',
     country: 'Cameroon',
   },
+  {
+    id: 3,
+    name: 'Doe',
+    email: 'doe@example.com',
+    city: 'Yde',
+    country: 'Cameroun',
+  },
 ];
 
 export default users;

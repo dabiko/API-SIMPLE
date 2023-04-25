@@ -1,112 +1,47 @@
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { expressYupMiddleware } from 'express-yup-middleware'
 
+
+import {
+    addUserSchemaValidator,
+    updateUserSchemaValidator,
+    getUserSchemaValidator,
+    deleteUserSchemaValidator,
+} from '../schema/user.schema.js';
 import userService from '../services/user.service.js'
+import userController from '../controllers/user.controllers'
 
 const router = express.Router();
 
-const STATUS = {
-  success: 'SUCCESS',
-  failure: 'FAILED',
-};
+router.post('/',
+    expressYupMiddleware({
+        schemaValidator: addUserSchemaValidator,
+        expectedStatusCode: StatusCodes.BAD_REQUEST,
+    }),
+    userController.addUser
+);
 
-router.post('/', (req, res) => {
+router.get('/all', userController.getAllUsers);
 
-    const { body: user } = req;
+router.get('/:id', expressYupMiddleware({
+        schemaValidator: getUserSchemaValidator,
+        expectedStatusCode: StatusCodes.BAD_REQUEST,
+    }),
+    userController.getUserById);
 
-    const addedUser = userService.addUser(user);
+router.put('/:id', expressYupMiddleware({
+        schemaValidator: updateUserSchemaValidator,
+        expectedStatusCode: StatusCodes.BAD_REQUEST,
+    }),
+    userController.updateUser,
 
+);
 
-    if (!user.name) {
-        return res.status(StatusCodes.BAD_REQUEST).send({
-            status: STATUS.failure,
-            message: 'Name is required',
-        })
-    }
-
-    return res.status(StatusCodes.CREATED).send({
-        status: STATUS.success,
-        user: addedUser,
-    });
-
-});
-
-router.get('/all', (req, res) => {
-    const users = userService.getAllUser();
-    if (users.length){
-        return res.status(StatusCodes.OK).send({
-            status: STATUS.success,
-            message: users,
-        })
-    }
-
-    return res.status(StatusCodes.NOT_FOUND).send({
-        status: STATUS.failure,
-        message: 'No users Found..',
-    })
-});
-
-router.get('/:id', (req, res) => {
-
-    const { body: user } = req;
-    const id = parseInt(req.params.id, 10);
-
-    const users = userService.getUser(id);
-
-    if (users) {
-        return res.status(StatusCodes.OK).send({
-            status: STATUS.success,
-            data: users,
-        });
-    }else{
-        return res.status(StatusCodes.NOT_FOUND).send({
-            status: STATUS.failure,
-            message: `User with id ${id} not available`,
-        });
-    }
-});
-
-
-router.put('/:id', (req, res) => {
-
-    const { body: user } = req;
-
-    const id = parseInt(req.params.id, 10);
-
-    const updateUser = userService.updateUser(id, user);
-
-    if (updateUser) {
-        return res.status(StatusCodes.OK).send({
-            status: STATUS.success,
-            message: updateUser,
-        })
-    }else{
-        return res.status(StatusCodes.NOT_FOUND).send({
-            status: STATUS.failure,
-            message: `User with id ${id} not found`,
-        })
-    }
-});
-
-router.delete('/:id', (req, res) => {
-
-    const { body: user } = req;
-
-    const id = parseInt(req.params.id, 10);
-
-    const deleteUser = userService.removeUser(id);
-
-    if (deleteUser) {
-        return res.status(StatusCodes.OK).send({
-            status: STATUS.success,
-            message: `User with id ${id} deleted successfully`,
-        })
-    }else{
-        return res.status(StatusCodes.NOT_FOUND).send({
-            status: STATUS.failure,
-            message: `User with id ${id} not found`,
-        })
-    }
-});
+router.delete('/:id',expressYupMiddleware({
+        schemaValidator: deleteUserSchemaValidator,
+        expectedStatusCode: StatusCodes.BAD_REQUEST,
+    }),
+    userController.deleteUser);
 
 export default router;
